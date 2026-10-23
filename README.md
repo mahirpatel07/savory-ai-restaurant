@@ -1,21 +1,44 @@
-# React + Vite
+# AI Restaurant Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+An advanced, full-stack AI-powered restaurant management system designed to handle customer reservations, seating, staff management, orders, and real-time updates seamlessly.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **AI Reservation Agent:** Customers can book reservations via an AI chat interface.
+- **Smart Table Allocation:** AI analyzes occupancy and conflicts to suggest available tables.
+- **Admin Dashboard:** Manage reservations, tables, and staff in real-time.
+- **Live Status Updates:** Customers receive real-time notifications about their reservation status.
+- **Interactive UI:** Beautiful, animated frontend built with React, Framer Motion, and GSAP.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the Oxlint configuration
+### Frontend
+- **Framework:** React 19 + Vite + TypeScript
+- **Styling & UI:** Tailwind CSS v4, Lucide React, react-icons
+- **Animations & 3D:** Framer Motion, GSAP, Three.js, React Three Fiber/Drei, Lottie React, react-spring
+- **Routing:** React Router DOM
+- **Data Visualization:** Recharts, React CountUp
+- **Forms & State:** React Hook Form
+- **Real-Time Communication:** Socket.io-client
+- **Exports:** jsPDF, xlsx
+- **Voice/AI Integration:** Ultravox Client
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+### Backend
+- **Runtime & Framework:** Node.js, Express.js
+- **Database:** MongoDB (Mongoose)
+- **AI & LLMs:** LangChain, LangGraph, Groq
+- **Real-Time Communication:** Socket.io
+- **Voice/Audio:** Deepgram SDK, Ultravox Client
+- **Authentication & Security:** JWT (jsonwebtoken), bcryptjs, CORS
+- **File Uploads:** Multer
+- **Messaging & Notifications:** Twilio (SMS), Nodemailer (Email)
+- **Validation:** Zod
 
-## Reservation flow diagram
+---
+
+## Reservation Flow Diagram
 
 ```mermaid
 flowchart TD
@@ -44,3 +67,41 @@ flowchart TD
     CHAT --> DT[Date & Time]
     CHAT --> STATUS[Live Status Updates]
 ```
+
+## Getting Started
+
+### Prerequisites
+- Node.js installed
+- MongoDB URI
+- Environment variables configured (Groq, Twilio, Deepgram, JWT Secret, etc.)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   ```
+
+2. **Install Backend Dependencies:**
+   ```bash
+   cd backend
+   npm install
+   ```
+
+3. **Install Frontend Dependencies:**
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+4. **Run the Backend:**
+   ```bash
+   cd backend
+   npm run dev
+   ```
+
+5. **Run the Frontend:**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
