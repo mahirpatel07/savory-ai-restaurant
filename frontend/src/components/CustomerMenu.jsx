@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
   ShoppingCart,
   Plus,
@@ -30,12 +30,18 @@ const API_BASE = typeof window !== 'undefined'
   : 'http://localhost:3001';
 
 export default function CustomerMenu() {
-  const { tableNumber } = useParams();
+  const { tableNumber: paramTableNumber } = useParams();
+  const [searchParams] = useSearchParams();
+  const queryTableNumber = searchParams.get('table') || searchParams.get('tableNumber');
+  const tableNumber = paramTableNumber || queryTableNumber || '1';
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState([]);
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const tax = subtotal * 0.05;
+  const total = subtotal + tax;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
 
@@ -190,9 +196,9 @@ export default function CustomerMenu() {
       const orderData = {
         tableNumber: Number(tableNumber),
         items: cart,
-        subtotal: total,
-        tax: total * 0.05,
-        totalAmount: total * 1.05,
+        subtotal,
+        tax,
+        totalAmount: total,
         orderType: 'dine-in',
         customerName: `Table ${tableNumber} Guest`,
         paymentMethod: 'unpaid',
@@ -293,8 +299,8 @@ export default function CustomerMenu() {
           </div>
 
           {/* Search & Categories Bar */}
-          <div className="mt-5 flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
+          <div className="mt-5 flex flex-col sm:flex-row gap-3 items-center">
+            <div className="relative w-full sm:w-80 shrink-0">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" size={16} />
               <input
                 type="text"

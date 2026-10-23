@@ -86,20 +86,22 @@ export default function Menu() {
   useEffect(() => {
     if (gridRef.current) {
       const cards = gridRef.current.children;
-      gsap.fromTo(cards,
-        { opacity: 0, scale: 0.9, y: 30 },
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 0.5,
-          stagger: 0.05,
-          ease: 'power2.out',
-          overwrite: 'auto'
-        }
-      );
+      if (cards && cards.length > 0) {
+        gsap.fromTo(Array.from(cards),
+          { opacity: 0, scale: 0.9, y: 30 },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.5,
+            stagger: 0.05,
+            ease: 'power2.out',
+            overwrite: 'auto'
+          }
+        );
+      }
     }
-  }, [activeCategory]);
+  }, [activeCategory, items]);
 
   return (
     <section

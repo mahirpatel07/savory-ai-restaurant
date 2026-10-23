@@ -114,6 +114,16 @@ export const savePrinter = async (printerData) => {
 };
 
 /**
+ * Delete a printer
+ */
+export const deletePrinter = async (printerId) => {
+  const settings = await getSettings();
+  settings.printers = settings.printers.filter(p => p._id?.toString() !== printerId);
+  await settings.save();
+  return settings;
+};
+
+/**
  * Test print trigger simulation
  */
 export const testPrint = async (printerId) => {

@@ -4,6 +4,7 @@ import { AreaChart, Area, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { CalendarRange, Sparkles, Users, DollarSign, ShoppingBag, TrendingUp, Clock, Utensils, Zap, Activity, Download, Filter, CreditCard, Wallet, Smartphone, Layers, CheckCircle2, ChevronRight, Award } from 'lucide-react';
 import { useReservation } from '../../context/ReservationContext';
 import { useTheme } from '../../context/ThemeContext';
+
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import gsap from 'gsap';
@@ -67,6 +68,7 @@ export default function Dashboard() {
   // Period and Order Type Filter States
   const [period, setPeriod] = useState('weekly'); // 'today', 'weekly', 'monthly', 'all'
   const [orderType, setOrderType] = useState('all'); // 'all', 'dine-in', 'takeaway', 'delivery'
+
 
   const [analytics, setAnalytics] = useState({ todayRevenue: 0, todayOrders: 0, averageOrderValue: 0, loading: true });
   const [reportData, setReportData] = useState({
@@ -138,62 +140,7 @@ export default function Dashboard() {
     return () => ctx.revert();
   }, []);
 
-  // Export Analytics Summary & Report as CSV
-  const handleExportCSV = () => {
-    try {
-      const rows = [
-        ['RESTAURANT DASHBOARD & ANALYTICS REPORT'],
-        ['Generated Date', new Date().toLocaleString()],
-        ['Selected Period', period.toUpperCase()],
-        ['Selected Order Type', orderType.toUpperCase()],
-        [''],
-        ['SUMMARY METRICS'],
-        ['Total Sales / Revenue ($)', analytics.todayRevenue],
-        ['Total Orders', analytics.todayOrders],
-        ['Paid Orders Count', analytics.paidOrderCount || 0],
-        ['Average Order Value ($)', analytics.averageOrderValue?.toFixed(2)],
-        ['Total Cost ($)', reportData.cost],
-        ['Net Profit ($)', reportData.profit],
-        ['Profit Margin (%)', `${reportData.profitMargin?.toFixed(1)}%`],
-        [''],
-        ['BEST SELLING ITEMS'],
-        ['Item Name', 'Quantity Sold', 'Sales Revenue ($)']
-      ];
 
-      (reportData.bestSellingItems || []).forEach(item => {
-        rows.push([item.name, item.quantity, item.revenue?.toFixed(2)]);
-      });
-
-      rows.push(['']);
-      rows.push(['PAYMENT BREAKDOWN']);
-      rows.push(['Payment Method', 'Transaction Count', 'Total Amount ($)']);
-
-      Object.entries(reportData.paymentBreakdown || {}).forEach(([method, data]) => {
-        rows.push([method.toUpperCase(), data.count, data.amount?.toFixed(2)]);
-      });
-
-      rows.push(['']);
-      rows.push(['TABLE PERFORMANCE']);
-      rows.push(['Table Number', 'Seating Capacity', 'Orders Count', 'Total Revenue ($)']);
-
-      (reportData.tablePerformance || []).forEach(tbl => {
-        rows.push([`Table ${tbl.tableNumber}`, tbl.capacity, tbl.orderCount, tbl.revenue?.toFixed(2)]);
-      });
-
-      const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `Analytics_Report_${period}_${orderType}_${Date.now()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success('Analytics CSV Report exported successfully!');
-    } catch (err) {
-      toast.error('Failed to export CSV report');
-    }
-  };
 
   return (
     <div ref={dashboardRef} className="space-y-6 pb-12 font-sans">
@@ -216,16 +163,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Export Report Action */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-2 rounded-2xl bg-orange-500 hover:bg-orange-400 py-3 px-5 text-xs font-black uppercase tracking-wider text-black shadow-lg shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
-            >
-              <Download size={16} />
-              <span>Export Report (CSV)</span>
-            </button>
-          </div>
+
         </div>
 
         {/* Analytics Filter Selector Bar */}
@@ -514,7 +452,7 @@ export default function Dashboard() {
             <tbody className="divide-y divide-white/5">
               {(!reportData.tablePerformance || reportData.tablePerformance.length === 0) ? (
                 <tr>
-                  <td colSpan="5" className="py-8 text-center text-white/30 text-xs font-bold uppercase tracking-wider">
+                  <td colSpan={5} className="py-8 text-center text-white/30 text-xs font-bold uppercase tracking-wider">
                     Loading floor table analytics...
                   </td>
                 </tr>
@@ -547,6 +485,8 @@ export default function Dashboard() {
           </table>
         </div>
       </div>
+
+
     </div>
   );
 }

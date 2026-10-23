@@ -54,7 +54,9 @@ export default function AppRoutes() {
       <Routes location={location}>
         <Route path="/" element={<App />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/menu" element={<CustomerMenu />} />
         <Route path="/menu/t/:tableNumber" element={<CustomerMenu />} />
+        <Route path="/menu/:tableNumber" element={<CustomerMenu />} />
         <Route path="/admin" element={
           <ProtectedRoute>
             <AdminLayout />

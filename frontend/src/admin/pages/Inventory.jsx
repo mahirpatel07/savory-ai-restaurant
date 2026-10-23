@@ -433,7 +433,7 @@ export default function Inventory() {
                 <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-gray-200'} text-xs`}>
                   {loading ? (
                     <tr>
-                      <td colSpan="8" className="py-20 text-center">
+                      <td colSpan={8} className="py-20 text-center">
                         <div className="flex flex-col items-center gap-3 text-white/40">
                           <Loader2 className="animate-spin text-orange-500" size={32} />
                           <span className="text-xs font-bold tracking-widest uppercase">Loading Inventory Items...</span>
@@ -442,7 +442,7 @@ export default function Inventory() {
                     </tr>
                   ) : filteredIngredients.length === 0 ? (
                     <tr>
-                      <td colSpan="8" className="py-20 text-center">
+                      <td colSpan={8} className="py-20 text-center">
                         <div className={`flex flex-col items-center gap-3 ${isDark ? 'text-white/40' : 'text-gray-600'} max-w-sm mx-auto`}>
                           <div className={`p-4 rounded-2xl ${isDark ? 'bg-white/5 border-white/10 text-white/30' : 'bg-gray-100 border-gray-200 text-gray-400'} border`}>
                             <Boxes size={36} />
@@ -626,14 +626,14 @@ export default function Inventory() {
                 <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-gray-200'}`}>
                   {logsLoading ? (
                     <tr>
-                      <td colSpan="6" className="py-12 text-center text-white/40">
+                      <td colSpan={6} className="py-12 text-center text-white/40">
                         <Loader2 size={24} className="animate-spin text-orange-500 inline-block mb-2" />
                         <p className="text-xs font-bold uppercase tracking-wider">Loading Movement History...</p>
                       </td>
                     </tr>
                   ) : filteredLogs.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="py-12 text-center text-white/40">
+                      <td colSpan={6} className="py-12 text-center text-white/40">
                         <p className="text-xs font-bold uppercase tracking-wider">No movement logs recorded yet.</p>
                       </td>
                     </tr>

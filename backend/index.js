@@ -29,15 +29,17 @@ import * as orderService from './services/orderService.js';
 import * as inventoryService from './services/inventoryService.js';
 import * as analyticsService from './services/analyticsService.js';
 import * as staffService from './services/staffService.js';
+import * as attendanceService from './services/attendanceService.js';
+import * as shiftService from './services/shiftService.js';
+import * as payrollService from './services/payrollService.js';
+import * as auditService from './services/auditService.js';
 import * as settingService from './services/settingService.js';
+import * as drawerService from './services/drawerService.js';
 import Ingredient from './models/Ingredient.js';
 import User from './models/User.js';
-import Attendance from './models/Attendance.js';
 import Waitlist from './models/Waitlist.js';
-import PurchaseOrder from './models/PurchaseOrder.js';
 import Review from './models/Review.js';
-import PromoCode from './models/PromoCode.js';
-import { protect, admin } from './middleware/auth.js';
+import { protect } from './middleware/auth.js';
 import * as authService from './services/authService.js';
 
 const app = express();
@@ -112,7 +114,7 @@ app.get('/api/dashboard/stats', async (_req, res) => {
     res.json({
       customers: customersCount
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching dashboard stats:', error);
     res.status(500).json({ success: false, message: 'Unable to fetch dashboard stats' });
   }
@@ -123,7 +125,7 @@ app.post('/api/ai/chat', async (req, res) => {
     const { message, state, history, voiceMode } = req.body || {};
     const result = await runReservationGraph({ message, state, history, voiceMode });
     return res.json(result);
-  } catch (error) {
+  } catch (_error) {
     // Detailed backend logging (safe from frontend)
     console.error('AI Chat Failure:', {
       message: error.message,
@@ -161,7 +163,7 @@ app.post('/api/voice/join', async (req, res) => {
   try {
     const session = await createVoiceSession();
     res.json(session);
-  } catch (error) {
+  } catch (_error) {
     console.error('Ultravox session error detail:', error.response?.data || error.message);
     res.status(500).json({
       error: 'Failed to create voice session',
@@ -253,7 +255,7 @@ app.post('/api/ai/check-table', async (req, res) => {
       reason: availability.reason,
       suggestedTimes: availability.suggestedTimes || []
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error checking table availability:', error);
     return res.status(500).json({ available: false, message: 'Unable to check table availability' });
   }
@@ -294,7 +296,7 @@ app.post('/api/reservation', async (req, res) => {
 
     const { reservation, formattedReservation } = result;
     return res.status(201).json({ success: true, reservation: { ...reservation.toObject(), id: reservation._id.toString() }, formattedReservation });
-  } catch (error) {
+  } catch (_error) {
     console.error('Reservation creation error:', error);
     return res.status(500).json({ success: false, message: 'Unable to create reservation' });
   }
@@ -304,7 +306,7 @@ app.get('/api/reservations', async (_req, res) => {
   try {
     const reservations = await Reservation.find().sort({ createdAt: -1 });
     return res.json(reservations.map(formatReservationForClient));
-  } catch (error) {
+  } catch (_error) {
     console.error('Error loading reservations:', error);
     return res.status(500).json({ message: 'Unable to load reservations' });
   }
@@ -318,7 +320,7 @@ app.get('/api/notifications', async (req, res) => {
     const notifications = await getNotifications(limit);
     const unreadCount = await Notification.countDocuments({ read: false });
     res.json({ notifications, unreadCount });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching notifications:', error);
     res.status(500).json({ success: false, message: 'Unable to fetch notifications' });
   }
@@ -328,7 +330,7 @@ app.patch('/api/notifications/:id/read', async (req, res) => {
   try {
     const notification = await markAsRead(req.params.id);
     res.json({ success: true, notification });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error marking notification as read:', error);
     res.status(500).json({ success: false, message: 'Unable to update notification' });
   }
@@ -338,7 +340,7 @@ app.post('/api/notifications/read-all', async (_req, res) => {
   try {
     await markAllAsRead();
     res.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error marking all notifications as read:', error);
     res.status(500).json({ success: false, message: 'Unable to update notifications' });
   }
@@ -350,7 +352,7 @@ app.get('/api/menu', async (_req, res) => {
   try {
     const dishes = await Dish.find().sort({ createdAt: -1 });
     res.json(dishes);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching menu:', error);
     res.status(500).json({ success: false, message: 'Unable to fetch menu' });
   }
@@ -378,7 +380,7 @@ app.post('/api/menu', upload.single('image'), async (req, res) => {
     emitReservationEvent('dish_created', dish);
 
     res.status(201).json(dish);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error creating dish:', error);
     res.status(500).json({ success: false, message: error.message || 'Unable to create dish' });
   }
@@ -395,7 +397,7 @@ app.patch('/api/menu/:id/toggle', async (req, res) => {
 
     emitReservationEvent('menu_updated', dish);
     res.json(dish);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error toggling dish availability:', error);
     res.status(500).json({ success: false, message: 'Unable to toggle dish availability' });
   }
@@ -409,7 +411,7 @@ app.patch('/api/menu/:id', async (req, res) => {
     }
     emitReservationEvent('menu_updated', dish);
     res.json(dish);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error updating dish:', error);
     res.status(500).json({ success: false, message: 'Unable to update dish' });
   }
@@ -426,7 +428,7 @@ app.get('/api/orders', async (req, res) => {
 
     const orders = await Order.find(query).sort({ createdAt: -1 });
     res.json(orders);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to fetch orders' });
   }
 });
@@ -462,7 +464,7 @@ app.get('/api/orders/active', async (_req, res) => {
   try {
     const orders = await orderService.getActiveOrders();
     res.json(orders);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to fetch active orders' });
   }
 });
@@ -471,7 +473,7 @@ app.get('/api/orders/table/:tableNumber', async (req, res) => {
   try {
     const orders = await orderService.getTableOrders(Number(req.params.tableNumber));
     res.json(orders);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to fetch table orders' });
   }
 });
@@ -482,7 +484,7 @@ app.get('/api/inventory', async (_req, res) => {
   try {
     const ingredients = await inventoryService.getAllIngredients();
     res.json(ingredients);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to fetch inventory' });
   }
 });
@@ -520,7 +522,7 @@ app.post('/api/inventory', async (req, res) => {
     const ingredient = await Ingredient.create(req.body);
     emitReservationEvent('inventory_updated', ingredient);
     res.status(201).json(ingredient);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to create ingredient' });
   }
 });
@@ -530,7 +532,7 @@ app.patch('/api/inventory/:id', async (req, res) => {
     const ingredient = await Ingredient.findByIdAndUpdate(req.params.id, req.body, { new: true });
     emitReservationEvent('inventory_updated', ingredient);
     res.json(ingredient);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to update ingredient' });
   }
 });
@@ -540,7 +542,7 @@ app.delete('/api/inventory/:id', async (req, res) => {
     await Ingredient.findByIdAndDelete(req.params.id);
     emitReservationEvent('inventory_updated', { id: req.params.id });
     res.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to delete ingredient' });
   }
 });
@@ -558,7 +560,7 @@ app.get('/api/inventory/logs', async (req, res) => {
   try {
     const logs = await inventoryService.getInventoryLogs(req.query.ingredientId);
     res.json(logs);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to fetch inventory logs' });
   }
 });
@@ -569,7 +571,7 @@ app.get('/api/staff', async (_req, res) => {
   try {
     const staff = await staffService.getAllStaff();
     res.json(staff);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to fetch staff list' });
   }
 });
@@ -579,7 +581,7 @@ app.post('/api/staff', async (req, res) => {
     const staff = await staffService.createStaff(req.body);
     emitReservationEvent('staff_updated', {});
     res.status(201).json(staff);
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({ success: false, message: error.message });
   }
 });
@@ -589,7 +591,7 @@ app.patch('/api/staff/:id', async (req, res) => {
     const staff = await staffService.updateStaff(req.params.id, req.body);
     emitReservationEvent('staff_updated', {});
     res.json(staff);
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({ success: false, message: error.message });
   }
 });
@@ -599,7 +601,7 @@ app.patch('/api/staff/:id/toggle', async (req, res) => {
     const staff = await staffService.toggleStaffStatus(req.params.id);
     emitReservationEvent('staff_updated', {});
     res.json(staff);
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({ success: false, message: error.message });
   }
 });
@@ -609,7 +611,7 @@ app.post('/api/staff/seed', async (_req, res) => {
     const staff = await staffService.seedStaffDefaults();
     emitReservationEvent('staff_updated', {});
     res.json({ success: true, staff });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to seed staff' });
   }
 });
@@ -619,8 +621,219 @@ app.delete('/api/staff/:id', async (req, res) => {
     await User.findByIdAndDelete(req.params.id);
     emitReservationEvent('staff_updated', {});
     res.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to delete staff member' });
+  }
+});
+
+// ── TIME CLOCK & ATTENDANCE API ENDPOINTS ──
+
+app.post('/api/attendance/verify-pin', async (req, res) => {
+  try {
+    const result = await attendanceService.verifyPin({ pin: req.body.pin });
+    res.json(result);
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/attendance/clock-in', async (req, res) => {
+  try {
+    const result = await attendanceService.clockIn({
+      pin: req.body.pin,
+      selfieImage: req.body.selfieImage,
+      notes: req.body.notes,
+      userId: req.body.userId,
+      ipAddress: req.ip
+    });
+    emitReservationEvent('attendance_updated', {});
+    res.json(result);
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/attendance/clock-out', async (req, res) => {
+  try {
+    const result = await attendanceService.clockOut({
+      pin: req.body.pin,
+      selfieImage: req.body.selfieImage,
+      notes: req.body.notes,
+      userId: req.body.userId,
+      ipAddress: req.ip
+    });
+    emitReservationEvent('attendance_updated', {});
+    res.json(result);
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/attendance/active', async (_req, res) => {
+  try {
+    const activeStaff = await attendanceService.getActiveClockedInStaff();
+    res.json(activeStaff);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to fetch active staff' });
+  }
+});
+
+app.get('/api/attendance/history', async (req, res) => {
+  try {
+    const records = await attendanceService.getAttendanceDashboard({
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      userId: req.query.userId,
+      status: req.query.status,
+      department: req.query.department
+    });
+    res.json(records);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to fetch attendance history' });
+  }
+});
+
+app.get('/api/attendance/dashboard', async (req, res) => {
+  try {
+    const records = await attendanceService.getAttendanceDashboard({
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      userId: req.query.userId,
+      status: req.query.status,
+      department: req.query.department
+    });
+    res.json(records);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to fetch attendance dashboard' });
+  }
+});
+
+app.post('/api/attendance/correct', protect, async (req, res) => {
+  try {
+    const record = await attendanceService.correctAttendanceRecord({
+      attendanceId: req.body.attendanceId,
+      checkIn: req.body.checkIn,
+      checkOut: req.body.checkOut,
+      reason: req.body.reason,
+      managerUser: req.user,
+      ipAddress: req.ip
+    });
+    emitReservationEvent('attendance_updated', {});
+    res.json({ success: true, record });
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// ── SHIFT SCHEDULER API ENDPOINTS ──
+
+app.get('/api/shifts', async (req, res) => {
+  try {
+    const shifts = await shiftService.getScheduledShifts({
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      userId: req.query.userId
+    });
+    res.json(shifts);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to fetch scheduled shifts' });
+  }
+});
+
+app.get('/api/shifts/my-shifts', async (req, res) => {
+  try {
+    const shifts = await shiftService.getScheduledShifts({
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      userId: req.query.userId
+    });
+    res.json(shifts);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to fetch scheduled shifts' });
+  }
+});
+
+app.post('/api/shifts/batch-save', async (req, res) => {
+  try {
+    const result = await shiftService.batchSaveShifts({
+      shifts: req.body.shifts,
+      reqUser: req.user || { name: 'Manager' },
+      ipAddress: req.ip
+    });
+    emitReservationEvent('shifts_updated', {});
+    res.json(result);
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/shifts/batch', async (req, res) => {
+  try {
+    const result = await shiftService.batchSaveShifts({
+      shifts: req.body.shifts,
+      reqUser: req.user || { name: 'Manager' },
+      ipAddress: req.ip
+    });
+    emitReservationEvent('shifts_updated', {});
+    res.json(result);
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/shifts/publish', async (req, res) => {
+  try {
+    const result = await shiftService.publishRoster({
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      reqUser: req.user || { name: 'Manager' },
+      ipAddress: req.ip
+    });
+    emitReservationEvent('shifts_updated', {});
+    res.json(result);
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+// ── PAYROLL SUMMARY API ENDPOINTS ──
+
+app.get('/api/payroll/summary', async (req, res) => {
+  try {
+    const summary = await payrollService.getPayrollSummary({
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      period: req.query.period
+    });
+    res.json(summary);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to calculate payroll summary' });
+  }
+});
+
+app.get('/api/payroll/export-csv', async (req, res) => {
+  try {
+    const csvContent = await payrollService.generatePayrollCSV({
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      period: req.query.period
+    });
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="savory_payroll_summary.csv"');
+    res.send(csvContent);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to export payroll CSV' });
+  }
+});
+
+// ── AUDIT LOGS API ENDPOINTS ──
+
+app.get('/api/audit-logs', async (_req, res) => {
+  try {
+    const logs = await auditService.getAuditLogs();
+    res.json(logs);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to fetch audit logs' });
   }
 });
 
@@ -630,7 +843,7 @@ app.get('/api/settings', async (_req, res) => {
   try {
     const settings = await settingService.getSettings();
     res.json(settings);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to fetch settings' });
   }
 });
@@ -640,7 +853,7 @@ app.patch('/api/settings', async (req, res) => {
     const settings = await settingService.updateSettings(req.body);
     emitReservationEvent('settings_updated', settings);
     res.json(settings);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to update settings' });
   }
 });
@@ -650,7 +863,7 @@ app.post('/api/settings/branches', async (req, res) => {
     const settings = await settingService.saveBranch(req.body);
     emitReservationEvent('settings_updated', settings);
     res.json(settings);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to save branch' });
   }
 });
@@ -660,8 +873,18 @@ app.post('/api/settings/printers', async (req, res) => {
     const settings = await settingService.savePrinter(req.body);
     emitReservationEvent('settings_updated', settings);
     res.json(settings);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Unable to save printer' });
+  }
+});
+
+app.delete('/api/settings/printers/:id', async (req, res) => {
+  try {
+    const settings = await settingService.deletePrinter(req.params.id);
+    emitReservationEvent('settings_updated', settings);
+    res.json(settings);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Failed to delete printer' });
   }
 });
 
@@ -669,7 +892,7 @@ app.post('/api/settings/printers/:id/test', async (req, res) => {
   try {
     const result = await settingService.testPrint(req.params.id);
     res.json(result);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Test print failed' });
   }
 });
@@ -680,7 +903,7 @@ app.get('/api/reviews', async (_req, res) => {
   try {
     const reviews = await Review.find().sort({ createdAt: -1 });
     res.json(reviews);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Failed to fetch reviews' });
   }
 });
@@ -721,7 +944,7 @@ app.get('/api/reviews/stats', async (_req, res) => {
       ambianceAverage: Number((ambianceSum / totalCount).toFixed(1)),
       distribution
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Failed to calculate review stats' });
   }
 });
@@ -745,7 +968,7 @@ app.post('/api/reviews', async (req, res) => {
     await newReview.save();
     emitReservationEvent('review_created', newReview);
     res.status(201).json({ success: true, review: newReview });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error saving review:', error);
     res.status(500).json({ success: false, message: 'Failed to submit review' });
   }
@@ -756,7 +979,7 @@ app.delete('/api/reviews/:id', async (req, res) => {
     await Review.findByIdAndDelete(req.params.id);
     emitReservationEvent('review_deleted', { id: req.params.id });
     res.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Failed to delete review' });
   }
 });
@@ -781,7 +1004,7 @@ app.get('/api/waitlist', async (req, res) => {
     }
     const items = await Waitlist.find(query).sort({ tokenNumber: 1 });
     res.json(items);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Failed to fetch waitlist' });
   }
 });
@@ -805,7 +1028,7 @@ app.get('/api/waitlist/stats', async (_req, res) => {
       totalToday: todayItems.length,
       avgWaitMinutes
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Failed to fetch waitlist stats' });
   }
 });
@@ -837,7 +1060,7 @@ app.post('/api/waitlist', async (req, res) => {
     await newWaitlistItem.save();
     emitReservationEvent('waitlist_updated', newWaitlistItem);
     res.status(201).json({ success: true, item: newWaitlistItem });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error adding to waitlist:', error);
     res.status(500).json({ success: false, message: 'Failed to add to waitlist' });
   }
@@ -861,7 +1084,7 @@ app.patch('/api/waitlist/:id/status', async (req, res) => {
       emitReservationEvent('waitlist_notified', updated);
     }
     res.json({ success: true, item: updated });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Failed to update waitlist status' });
   }
 });
@@ -871,8 +1094,61 @@ app.delete('/api/waitlist/:id', async (req, res) => {
     await Waitlist.findByIdAndDelete(req.params.id);
     emitReservationEvent('waitlist_updated', { id: req.params.id });
     res.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Failed to delete waitlist entry' });
+  }
+});
+
+// ── CASH REGISTER & Z-REPORT API ENDPOINTS ──
+
+app.get('/api/cash-drawer/status', protect, async (_req, res) => {
+  try {
+    const status = await drawerService.getCurrentDrawer();
+    res.json(status);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to fetch cash drawer status' });
+  }
+});
+
+app.post('/api/cash-drawer/open', protect, async (req, res) => {
+  try {
+    const { openingFloat } = req.body;
+    const drawer = await drawerService.openDrawer({ openingFloat, reqUser: req.user });
+    emitReservationEvent('cash_drawer_updated', {});
+    res.json({ success: true, drawer });
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/cash-drawer/transaction', protect, async (req, res) => {
+  try {
+    const { type, amount, reason } = req.body;
+    const drawer = await drawerService.addCashTransaction({ type, amount, reason, reqUser: req.user });
+    emitReservationEvent('cash_drawer_updated', {});
+    res.json({ success: true, drawer });
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/cash-drawer/close-z-report', protect, async (req, res) => {
+  try {
+    const { actualCountedCash, notes } = req.body;
+    const result = await drawerService.closeZReport({ actualCountedCash, notes, reqUser: req.user });
+    emitReservationEvent('cash_drawer_updated', {});
+    res.json(result);
+  } catch (_error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/cash-drawer/z-report-history', protect, async (_req, res) => {
+  try {
+    const history = await drawerService.getZReportHistory();
+    res.json(history);
+  } catch (_error) {
+    res.status(500).json({ success: false, message: 'Unable to fetch Z-Report closure history' });
   }
 });
 
@@ -892,7 +1168,7 @@ app.get('/api/analytics/summary', async (req, res) => {
       period: data.period,
       orderType: data.orderType
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Analytics summary error:', error);
     res.status(500).json({ success: false, message: 'Unable to fetch analytics summary' });
   }
@@ -903,7 +1179,7 @@ app.get('/api/analytics/reporting', async (req, res) => {
     const { period = 'weekly', orderType = 'all' } = req.query;
     const report = await analyticsService.getDetailedAnalyticsReport(period, orderType);
     res.json(report);
-  } catch (error) {
+  } catch (_error) {
     console.error('Reporting error:', error);
     res.status(500).json({ success: false, message: 'Unable to fetch reporting data' });
   }
@@ -1009,7 +1285,7 @@ app.post('/api/ai/recommendations', async (req, res) => {
       recommendations: recommendations.slice(0, 2)
     });
 
-  } catch (error) {
+  } catch (_error) {
     console.error('Recommendation Engine Error:', error);
     res.status(500).json({ success: false, message: 'Failed to generate AI recommendations' });
   }
@@ -1268,7 +1544,7 @@ app.post('/api/admin/voice-command', async (req, res) => {
       });
     }
 
-  } catch (error) {
+  } catch (_error) {
     console.error('Error in /api/admin/voice-command:', error);
     res.status(500).json({ success: false, message: 'Voice command processing failed' });
   }
@@ -1280,7 +1556,7 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const user = await authService.registerUser(req.body);
     res.status(201).json(user);
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({ success: false, message: error.message });
   }
 });
@@ -1290,7 +1566,7 @@ app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     const user = await authService.loginUser(email, password);
     res.json(user);
-  } catch (error) {
+  } catch (_error) {
     res.status(401).json({ success: false, message: error.message });
   }
 });
@@ -1305,7 +1581,7 @@ app.get('/api/customer/orders', protect, async (req, res) => {
   try {
     const orders = await Order.find({ customerPhone: req.user.phone }).sort({ createdAt: -1 });
     res.json(orders);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Error fetching orders' });
   }
 });
@@ -1314,7 +1590,7 @@ app.get('/api/customer/reservations', protect, async (req, res) => {
   try {
     const reservations = await Reservation.find({ phone: req.user.phone }).sort({ date: -1, time: -1 });
     res.json(reservations);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Error fetching reservations' });
   }
 });
@@ -1325,7 +1601,7 @@ app.patch('/api/customer/preferences', protect, async (req, res) => {
     user.preferences = { ...user.preferences, ...req.body };
     await user.save();
     res.json(user.preferences);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Error updating preferences' });
   }
 });
@@ -1342,7 +1618,7 @@ app.get('/api/customers/search', async (req, res) => {
       ]
     }).limit(10);
     res.json(customers);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Error searching customers' });
   }
 });
@@ -1354,7 +1630,7 @@ app.get('/api/customers/profile/:phone', async (req, res) => {
 
     const orders = await Order.find({ customerPhone: req.params.phone }).sort({ createdAt: -1 });
     res.json({ user, orders });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Error fetching profile' });
   }
 });
@@ -1367,7 +1643,7 @@ app.patch('/api/customers/preferences/:phone', async (req, res) => {
       { new: true }
     );
     res.json(user);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Error updating preferences' });
   }
 });
@@ -1389,7 +1665,7 @@ app.post('/api/notifications/call-waiter', async (req, res) => {
     });
 
     res.status(201).json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, message: 'Error calling waiter' });
   }
 });
@@ -1615,7 +1891,7 @@ app.patch('/api/reservations/:id', async (req, res) => {
     }
 
     return res.json({ success: true, reservation: formattedRes });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error updating reservation:', error);
     return res.status(500).json({ success: false, message: 'Unable to update reservation' });
   }
@@ -1862,7 +2138,7 @@ app.post('/api/tables/merge', async (req, res) => {
     const allTables = await Table.find().sort({ tableNumber: 1 });
     emitReservationEvent('tables_updated', { tables: allTables });
     return res.status(201).json({ success: true, table: combinedTable });
-  } catch (error) {
+  } catch (_error) {
     console.error(error);
     return res.status(500).json({ success: false, message: 'Unable to merge tables' });
   }
@@ -1993,7 +2269,7 @@ app.post('/api/tables/transfer-order', async (req, res) => {
     emitReservationEvent('order_updated', activeOrder);
 
     return res.json({ success: true, order: activeOrder, tables: allTables });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error transferring order:', error);
     return res.status(500).json({ success: false, message: error.message || 'Unable to transfer order' });
   }
@@ -2100,7 +2376,7 @@ async function start() {
       console.log(`Server running on http://localhost:${PORT}`);
     });
     initSocket(server);
-  } catch (error) {
+  } catch (_error) {
     console.error('Unable to start server', error);
   }
 }

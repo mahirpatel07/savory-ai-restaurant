@@ -69,21 +69,26 @@ export default function Gallery() {
   }, []);
 
   const handleHover = (e, isEnter) => {
+    if (!e.currentTarget) return;
     const img = e.currentTarget.querySelector('img');
     const text = e.currentTarget.querySelector('.reveal-text');
 
-    gsap.to(img, {
-      scale: isEnter ? 1.08 : 1,
-      duration: 0.7,
-      ease: 'power2.out'
-    });
+    if (img) {
+      gsap.to(img, {
+        scale: isEnter ? 1.08 : 1,
+        duration: 0.7,
+        ease: 'power2.out'
+      });
+    }
 
-    gsap.to(text, {
-      y: isEnter ? 0 : 16,
-      opacity: isEnter ? 1 : 0.8,
-      duration: 0.5,
-      ease: 'power2.out'
-    });
+    if (text) {
+      gsap.to(text, {
+        y: isEnter ? 0 : 16,
+        opacity: isEnter ? 1 : 0.8,
+        duration: 0.5,
+        ease: 'power2.out'
+      });
+    }
   };
 
   return (

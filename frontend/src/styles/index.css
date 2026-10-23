@@ -32,20 +32,20 @@ html.dark {
 }
 
 html,
-body,
-#root {
-  height: 100%;
+body {
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-}
-
-body {
+  overflow-x: hidden;
   background: var(--bg-main);
   color: var(--text-main);
   font-family: var(--font-sans);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
 }
 
 /* Light mode form control defaults */

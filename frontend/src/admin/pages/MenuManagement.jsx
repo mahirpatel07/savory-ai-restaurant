@@ -657,7 +657,7 @@ export default function MenuManagement() {
                           value={newDish.description}
                           onChange={(e) => setNewDish(prev => ({ ...prev, description: e.target.value }))}
                           placeholder="Describe flavors, ingredients and tableside preparation..."
-                          rows="3"
+                          rows={4}
                           className={`w-full rounded-2xl border ${isDark ? 'border-white/15 bg-black/50 text-white' : 'border-gray-200 bg-gray-50 text-gray-900'} px-4 py-3 text-xs outline-none focus:border-orange-500 transition resize-none`}
                         />
                       </div>

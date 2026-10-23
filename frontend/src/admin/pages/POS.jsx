@@ -33,9 +33,11 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReservation } from '../../context/ReservationContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import AIUpsellWidget from '../../components/AIUpsellWidget';
 import ActiveOrdersDrawer from '../components/ActiveOrdersDrawer';
+
 import { getSocket } from '../../utils/socket';
 import { getCategoryImage } from '../../utils/menuData';
 
@@ -193,6 +195,7 @@ export default function POS() {
   const location = useLocation();
   const { tables, syncTables } = useReservation();
   const { theme } = useTheme();
+  const { user: currentUser } = useAuth();
   const isDark = theme === 'dark';
 
   const [dishes, setDishes] = useState([]);
@@ -236,6 +239,7 @@ export default function POS() {
   const [checkoutModal, setCheckoutModal] = useState(false);
   const [receiptModal, setReceiptModal] = useState(false);
   const [splitModal, setSplitModal] = useState(false);
+
   const [splitCount, setSplitCount] = useState(2);
   const [lastOrder, setLastOrder] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -605,6 +609,8 @@ export default function POS() {
                 {activeOrdersCount}
               </span>
             </button>
+
+
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-hide w-full">
@@ -1539,6 +1545,8 @@ export default function POS() {
           </div>
         )}
       </AnimatePresence>
+
+
     </div>
   );
 }

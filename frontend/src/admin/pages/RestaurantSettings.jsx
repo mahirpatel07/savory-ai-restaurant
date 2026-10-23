@@ -25,6 +25,8 @@ export default function RestaurantSettings() {
   // Printer Modal State
   const [printerModalOpen, setPrinterModalOpen] = useState(false);
   const [printerData, setPrinterData] = useState({ name: '', type: 'receipt', connectionType: 'network', ipAddress: '192.168.1.100', port: 9100, active: true });
+  const [deletePrinterModalOpen, setDeletePrinterModalOpen] = useState(false);
+  const [printerToDelete, setPrinterToDelete] = useState(null);
 
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -89,6 +91,24 @@ export default function RestaurantSettings() {
       }
     } catch (error) {
       toast.error('Test print failed');
+    }
+  };
+
+  const confirmDeletePrinter = (printer) => {
+    setPrinterToDelete(printer);
+    setDeletePrinterModalOpen(true);
+  };
+
+  const handleDeletePrinter = async () => {
+    if (!printerToDelete) return;
+    try {
+      const response = await axios.delete(`${API_BASE}/api/settings/printers/${printerToDelete._id}`);
+      setSettings(response.data);
+      toast.success('Printer removed successfully');
+      setDeletePrinterModalOpen(false);
+      setPrinterToDelete(null);
+    } catch (error) {
+      toast.error('Failed to delete printer');
     }
   };
 
@@ -357,12 +377,21 @@ export default function RestaurantSettings() {
                   <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border ${printer.type === 'kitchen' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
                     {printer.type?.toUpperCase()} PRINTER
                   </span>
-                  <button
-                    onClick={() => handleTestPrint(printer._id)}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black uppercase hover:bg-orange-500 hover:text-black transition-all cursor-pointer"
-                  >
-                    <Printer size={12} /> Test Print
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleTestPrint(printer._id)}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-black uppercase hover:bg-orange-500 hover:text-black transition-all cursor-pointer"
+                    >
+                      <Printer size={12} /> Test Print
+                    </button>
+                    <button
+                      onClick={() => confirmDeletePrinter(printer)}
+                      title="Delete Printer"
+                      className="p-1.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-all cursor-pointer"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </div>
 
                 <h4 className="text-base font-black">{printer.name}</h4>
@@ -445,6 +474,32 @@ export default function RestaurantSettings() {
                   <button type="submit" className="flex-[2] py-3 rounded-2xl bg-orange-500 text-black font-black text-xs uppercase">Save Printer</button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── DELETE PRINTER CONFIRMATION MODAL ── */}
+      <AnimatePresence>
+        {deletePrinterModalOpen && (
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 sm:p-6 backdrop-blur-md bg-black/75">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`w-full max-w-md rounded-[32px] border ${isDark ? 'border-white/15 bg-[#0e0e11] text-white' : 'border-gray-200 bg-white text-gray-900'} p-7 space-y-5 shadow-2xl`}>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-400">
+                  <ShieldAlert size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black uppercase">Delete Printer</h3>
+                  <p className={`text-xs ${isDark ? 'text-white/50' : 'text-gray-500'} font-medium mt-0.5`}>This action cannot be undone.</p>
+                </div>
+              </div>
+              <p className={`text-xs ${isDark ? 'text-white/80' : 'text-gray-700'} font-medium`}>
+                Are you sure you want to delete <strong className="text-orange-500 font-bold">{printerToDelete?.name}</strong>?
+              </p>
+              <div className="pt-2 flex gap-3">
+                <button type="button" onClick={() => { setDeletePrinterModalOpen(false); setPrinterToDelete(null); }} className="flex-1 py-3 rounded-2xl border border-white/10 bg-white/5 text-xs font-bold text-white/60 hover:bg-white/10 transition-all cursor-pointer">Cancel</button>
+                <button type="button" onClick={handleDeletePrinter} className="flex-[2] py-3 rounded-2xl bg-red-500 text-white font-black text-xs uppercase hover:bg-red-400 transition-all cursor-pointer">Delete Printer</button>
+              </div>
             </motion.div>
           </div>
         )}

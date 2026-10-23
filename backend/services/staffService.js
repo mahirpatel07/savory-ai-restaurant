@@ -12,12 +12,10 @@ export const getAllStaff = async () => {
 
     const allOrders = await Order.find({ status: { $ne: 'cancelled' } });
 
-    // Calculate real performance metrics from orders
     const staffPerformance = staffMembers.map(staff => {
       const staffObj = staff.toObject();
       const staffNameLower = (staff.name || '').toLowerCase();
 
-      // Find orders handled by this staff member
       const handledOrders = allOrders.filter(o =>
         (o.waiterName && o.waiterName.toLowerCase().includes(staffNameLower)) ||
         (o.customerName && o.customerName.toLowerCase().includes(staffNameLower))
@@ -45,10 +43,10 @@ export const getAllStaff = async () => {
 };
 
 /**
- * Create a new staff member
+ * Create a new staff member with PIN, hourlyRate, and department
  */
 export const createStaff = async (staffData) => {
-  const { name, email, password, role, phone, pin, status } = staffData;
+  const { name, email, password, role, phone, pin, hourlyRate, department, status } = staffData;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -62,7 +60,9 @@ export const createStaff = async (staffData) => {
     role: role || 'waiter',
     status: status || 'active',
     phone: phone || '',
-    pin: pin || ''
+    pin: pin ? String(pin).trim() : '',
+    hourlyRate: Number(hourlyRate) || 18.50,
+    department: department || 'Operations'
   });
 
   const staffObj = staff.toObject();
@@ -79,7 +79,7 @@ export const updateStaff = async (staffId, staffData) => {
     throw new Error('Staff member not found');
   }
 
-  const { name, email, role, phone, pin, status, password } = staffData;
+  const { name, email, role, phone, pin, hourlyRate, department, status, password } = staffData;
 
   if (name) staff.name = name;
   if (email && email !== staff.email) {
@@ -89,7 +89,9 @@ export const updateStaff = async (staffId, staffData) => {
   }
   if (role) staff.role = role;
   if (phone !== undefined) staff.phone = phone;
-  if (pin !== undefined) staff.pin = pin;
+  if (pin !== undefined) staff.pin = String(pin).trim();
+  if (hourlyRate !== undefined) staff.hourlyRate = Number(hourlyRate) || 18.50;
+  if (department !== undefined) staff.department = department;
   if (status) staff.status = status;
   if (password) staff.password = password;
 
@@ -118,24 +120,27 @@ export const toggleStaffStatus = async (staffId) => {
 };
 
 /**
- * Seed sample staff members if none exist
+ * Seed sample staff members
  */
 export const seedStaffDefaults = async () => {
-  const existingCount = await User.countDocuments({ role: { $ne: 'customer' } });
-  if (existingCount > 0) {
-    return await getAllStaff();
-  }
-
   const defaultStaff = [
-    { name: 'Alex Johnson', email: 'alex@savory.com', password: 'password123', role: 'manager', status: 'active', phone: '+1 555-0192', pin: '1234' },
-    { name: 'Sarah Connor', email: 'sarah@savory.com', password: 'password123', role: 'chef', status: 'active', phone: '+1 555-0143', pin: '5678' },
-    { name: 'Michael Smith', email: 'michael@savory.com', password: 'password123', role: 'waiter', status: 'active', phone: '+1 555-0188', pin: '1111' },
-    { name: 'Emma Watson', email: 'emma@savory.com', password: 'password123', role: 'cashier', status: 'active', phone: '+1 555-0176', pin: '2222' },
-    { name: 'David Beckham', email: 'david@savory.com', password: 'password123', role: 'waiter', status: 'inactive', phone: '+1 555-0165', pin: '3333' }
+    { name: 'Admin', email: 'admin@savory.com', password: 'admin123', role: 'admin', status: 'active', phone: '+1 555-0100', pin: '0987', hourlyRate: 30.00, department: 'Management' },
+    { name: 'Natu kaka', email: 'natu@savory.com', password: 'password123', role: 'manager', status: 'active', phone: '+1 555-0192', pin: '4321', hourlyRate: 25.00, department: 'Management' },
+    { name: 'Bahga', email: 'bahga@savory.com', password: 'password123', role: 'chef', status: 'active', phone: '+1 555-0143', pin: '3456', hourlyRate: 22.00, department: 'Kitchen' },
+    { name: 'Magan', email: 'magan@savory.com', password: 'password123', role: 'waiter', status: 'active', phone: '+1 555-0188', pin: '2345', hourlyRate: 18.50, department: 'Operations' }
   ];
 
   for (const s of defaultStaff) {
-    await User.create(s);
+    const existing = await User.findOne({ email: s.email });
+    if (!existing) {
+      await User.create(s);
+    } else {
+      existing.pin = s.pin;
+      existing.hourlyRate = s.hourlyRate;
+      existing.department = s.department;
+      existing.status = 'active';
+      await existing.save();
+    }
   }
 
   return await getAllStaff();

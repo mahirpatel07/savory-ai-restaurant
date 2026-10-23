@@ -314,7 +314,7 @@ export default function DailyReservations() {
               <AnimatePresence mode="popLayout">
                 {paginatedData.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className={`px-6 py-20 text-center ${isDark ? 'text-white/30' : 'text-gray-500'}`}>
+                    <td colSpan={7} className={`px-6 py-20 text-center ${isDark ? 'text-white/30' : 'text-gray-500'}`}>
                       <div className="flex flex-col items-center gap-3">
                         <div className={`p-4 rounded-2xl ${isDark ? 'bg-white/5 border-white/10 text-white/20' : 'bg-gray-100 border-gray-200 text-gray-400'} border`}>
                           <Calendar size={36} />

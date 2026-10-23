@@ -238,7 +238,7 @@ export default function ReserveModal({ isOpen, onClose }) {
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] text-gray-dark font-semibold uppercase tracking-wider">Special Requests</label>
                     <textarea
-                      rows="3"
+                      rows={3}
                       placeholder="e.g. Candle-light anniversary table, wine pairing consultation, window seat requests..."
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
