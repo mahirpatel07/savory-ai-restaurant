@@ -12,7 +12,6 @@ const DEFAULT_HOURS = [
 
 const DEFAULT_BRANCHES = [
   { branchId: 'BR-01', name: 'Main Flagship Branch', address: '123 Gourmet Ave, Downtown', phone: '+1 555-0199', active: true },
-  { branchId: 'BR-02', name: 'Waterfront Bay Branch', address: '456 Ocean Pier Blvd', phone: '+1 555-0288', active: true }
 ];
 
 const DEFAULT_PRINTERS = [

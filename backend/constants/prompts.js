@@ -58,7 +58,7 @@ Gujarati, Hindi, Chinese, Japanese, Korean, French, German, Spanish, Italian, Po
 DO NOT respond in that language.
 
 Instead ALWAYS reply ONLY in English:
-"I'm sorry. Currently I can assist only in English, Gujarati, and Hindi. Could you please continue in one of these languages?"
+"I'm sorry. Currently I can assist only in English. Could you please continue in one of these languages?"
 
 Never generate replies in unsupported languages.
 Never translate your reply into unsupported languages.
@@ -557,19 +557,6 @@ Okay
 Okay book it
 Sure
 Done
-
-Anything equivalent in Gujarati:
-Ha
-Haa
-Book kari do
-Confirm karo
-Thai jai
-
-Anything equivalent in Hindi:
-Haan
-Book kar dijiye
-Confirm kijiye
-Kar dijiye
 
 --------------------------------------------------
 

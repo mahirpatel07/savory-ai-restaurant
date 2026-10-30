@@ -2,7 +2,7 @@ export const restaurantInfo = {
   name: 'Savory',
   address: '452 Culinary Heights, Upper Manhattan, NY 10022',
   openingHours: '11:00 AM',
-  closingHours: '11:00 PM',
+  closingHours: '12:00 PM',
   phone: '+1 (212) 555-8942',
   email: 'concierge@savory.com',
   cuisine: 'Molecular Gastronomy & Modern Italian',

@@ -239,7 +239,7 @@ export default function CustomerReviews() {
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1.5">
-                    <span className="text-emerald-400 flex items-center gap-1.5">💚 Positive (4-5★)</span>
+                    <span className="text-emerald-400 flex items-center gap-1.5">Positive (4-5★)</span>
                     <span className="font-mono">{Math.round(((stats.distribution?.[5] + stats.distribution?.[4]) / (stats.totalCount || 1)) * 100)}%</span>
                   </div>
                   <div className={`h-2.5 w-full rounded-full ${isDark ? 'bg-white/5' : 'bg-gray-100'} overflow-hidden p-0.5 border ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
@@ -248,7 +248,7 @@ export default function CustomerReviews() {
                 </div>
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1.5">
-                    <span className="text-amber-400 flex items-center gap-1.5">💛 Neutral (3★)</span>
+                    <span className="text-amber-400 flex items-center gap-1.5">Neutral (3★)</span>
                     <span className="font-mono">{Math.round((stats.distribution?.[3] / (stats.totalCount || 1)) * 100)}%</span>
                   </div>
                   <div className={`h-2.5 w-full rounded-full ${isDark ? 'bg-white/5' : 'bg-gray-100'} overflow-hidden p-0.5 border ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
@@ -257,7 +257,7 @@ export default function CustomerReviews() {
                 </div>
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1.5">
-                    <span className="text-rose-400 flex items-center gap-1.5">❤️ Critical (1-2★)</span>
+                    <span className="text-rose-400 flex items-center gap-1.5">Critical (1-2★)</span>
                     <span className="font-mono">{Math.round(((stats.distribution?.[2] + stats.distribution?.[1]) / (stats.totalCount || 1)) * 100)}%</span>
                   </div>
                   <div className={`h-2.5 w-full rounded-full ${isDark ? 'bg-white/5' : 'bg-gray-100'} overflow-hidden p-0.5 border ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
@@ -274,15 +274,15 @@ export default function CustomerReviews() {
               <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/40' : 'text-gray-500'} block mb-4`}>Top Praised Themes</span>
               <div className="space-y-3.5">
                 <div className={`flex items-center justify-between p-3 rounded-2xl border ${isDark ? 'bg-white/[0.03] border-white/5' : 'bg-gray-50 border-gray-200'}`}>
-                  <span className="text-xs font-bold flex items-center gap-2">🍲 Culinary Flavor</span>
+                  <span className="text-xs font-bold flex items-center gap-2">Culinary Flavor</span>
                   <span className="text-emerald-400 font-mono text-xs font-black bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl">94% Positive</span>
                 </div>
                 <div className={`flex items-center justify-between p-3 rounded-2xl border ${isDark ? 'bg-white/[0.03] border-white/5' : 'bg-gray-50 border-gray-200'}`}>
-                  <span className="text-xs font-bold flex items-center gap-2">🤝 Staff Hospitality</span>
+                  <span className="text-xs font-bold flex items-center gap-2">Staff Hospitality</span>
                   <span className="text-emerald-400 font-mono text-xs font-black bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl">91% Positive</span>
                 </div>
                 <div className={`flex items-center justify-between p-3 rounded-2xl border ${isDark ? 'bg-white/[0.03] border-white/5' : 'bg-gray-50 border-gray-200'}`}>
-                  <span className="text-xs font-bold flex items-center gap-2">🎵 Ambiance & Decor</span>
+                  <span className="text-xs font-bold flex items-center gap-2">Ambiance & Decor</span>
                   <span className="text-emerald-400 font-mono text-xs font-black bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl">88% Positive</span>
                 </div>
               </div>
